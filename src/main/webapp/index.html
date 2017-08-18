@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC test</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="lib/adapter.js"></script>
+</head>
+<body>
+<h1>Hello!</h1>
+<div id="videos">
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+</div>
+
+<script>
+    function getWebSocketPath(){
+        var protocol = (window.location.protocol == 'http:') ? 'ws://' : 'wss://';
+        var hostname = window.location.hostname;
+        var port = window.location.port;
+        var appname = window.location.pathname.replace('index.html', '');
+        var suffix = 'chat';
+
+        return protocol +hostname + (port != '' ? ':' + port : '') + appname + suffix;
+    }
+
+    //var room = $.url().param('room');
+    var websocket = new WebSocket(getWebSocketPath());
+    websocket.onopen = function(event){
+        var json = {
+            type:"request",
+            data:""
+        }
+        websocket.send(JSON.stringify(json));
+    }
+
+    websocket.onmessage = function(evt){
+        var msg = evt.data;
+        console.log(msg);
+        var json = JSON.parse(msg);
+
+        switch(json.type)
+        {
+            case "create":
+                getStream();
+                break;
+            case "join":
+                caller = true;
+                getStream();
+                //doCall();
+                break;
+            case "offer":
+                doAnswer(JSON.parse(json.data));
+                break;
+            case "answer":
+                dealAnswer(JSON.parse(json.data));
+                break;
+            case "candidate":
+                addCandidate(json.data);
+                break;
+        }
+    }
+
+    var pc;
+    var localVideo = document.getElementById("localVideo");
+    var remoteVideo = document.getElementById("remoteVideo");
+    var localStream;
+    var localSD;
+    var caller;
+    var pcConfig = {
+        'iceServers': [{
+            'urls': 'stun:stun.l.google.com:19302'
+        }]
+    };
+    function getStream(){
+        console.log("getstream");
+        navigator.mediaDevices.getUserMedia({
+            audio:true,
+            video:true
+        }).then(gotStream).catch(function(e){
+            alert("Error while getting stream" + e);
+        });
+
+
+    }
+
+    function gotStream(stream){
+        console.log("gotstream");
+        var streamURL = window.URL.createObjectURL(stream);
+        localVideo.src = streamURL;
+        localStream = stream;
+        initConnection();
+    }
+
+    function initConnection(){
+        console.log("initconnection");
+        createPeerConnection();
+        while(localStream == null)
+            continue;
+        pc.addStream(localStream);
+
+        if(caller == true)
+            doCall();
+    }
+
+    function createPeerConnection() {
+        console.log("createPeerConnection");
+        pc = new RTCPeerConnection(pcConfig);
+        pc.onaddstream = function (evt) {
+            console.log("on add stream")
+            remoteVideo.src = window.URL.createObjectURL(evt.stream);
+        }
+        pc.onicecandidate = function (evt) {
+            console.log("on ice candidate");
+            if (evt.candidate) {
+
+                var candidateInformaion = {
+                    label: evt.candidate.sdpMLineIndex,
+                    id: evt.candidate.sdpMid,
+                    candidate: evt.candidate.candidate
+                }
+
+                var json = {
+                    type: "candidate",
+                    data: candidateInformaion
+                };
+                console.log(JSON.stringify(json));
+                websocket.send(JSON.stringify(json));
+            }
+        }
+    }
+
+    function doCall(){
+        console.log("docall");
+        pc.createOffer(function(offer){
+            pc.setLocalDescription(offer);
+            var sdp = JSON.stringify(offer.toJSON());
+            var json = {
+                type:"offer",
+                data:sdp
+            }
+            websocket.send(JSON.stringify(json));
+        },function(err){
+            console.log("Error on creating offer :" + err);
+        });
+    }
+
+    function doAnswer(sdp){
+        pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        pc.createAnswer(function(answer){
+            pc.setLocalDescription(answer);
+            var sdp = JSON.stringify(answer);
+            var json = {
+                type:"answer",
+                data:sdp
+            }
+            websocket.send(JSON.stringify(json));
+        },function(err){
+            console.log("Error on sending answer :" + err);
+        });
+    }
+
+    function dealAnswer(sdp){
+        pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    }
+
+    function addCandidate(candidateInformation){
+        console.log("add candidate");
+        var candidate = new RTCIceCandidate({
+            sdpMLineIndex:candidateInformation.label,
+            candidate:candidateInformation.candidate
+        })
+        pc.addIceCandidate(candidate);
+    }
+</script>
+</body>
+</html>
