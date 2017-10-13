@@ -1,177 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>WebRTC test</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="lib/adapter.js"></script>
+    <script>
+        if(!location.hash.replace('#', '').length) {
+            location.href = location.href.split('#')[0] + '#' + (Math.random() * 100).toString().replace('.', '');
+            location.reload();
+        }
+    </script>
+
+    <title>WebRTC One-to-Many Video-Broadcasting | Muaz Khan</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="author" type="text/html" href="https://plus.google.com/100325991024054712503">
+    <meta name="author" content="Muaz Khan">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <script>
+        var hash = window.location.hash.replace('#', '');
+        if (!hash.length) location.href = location.href + '#meeting-roomid-' + ((Math.random() * new Date().getTime()).toString(36).toLowerCase().replace(/\./g, '-'));
+    </script>
+    <script src="https://cdn.webrtc-experiment.com/socket.io.js"></script>
+    <script src="lib/meeting.js"> </script>
 </head>
 <body>
-<h1>Hello!</h1>
-<div id="videos">
-    <video id="localVideo" autoplay muted></video>
-    <video id="remoteVideo" autoplay></video>
-</div>
 
+
+<section class="plusone-gplus">
+    <div class="g-plusone" data-href="https://www.webrtc-experiment.com/"></div>
+</section>
+<section>
+    <h2>Setup a new meeting:</h2>
+
+    <button id="setup-new-meeting">Setup New Meeting</button>
+</section>
+
+
+<div id="videos-container"></div>
 <script>
-    function getWebSocketPath(){
-        var protocol = (window.location.protocol == 'http:') ? 'ws://' : 'wss://';
-        var hostname = window.location.hostname;
-        var port = window.location.port;
-        var appname = window.location.pathname.replace('index.html', '');
-        var suffix = 'chat';
-
-        return protocol +hostname + (port != '' ? ':' + port : '') + appname + suffix;
-    }
-
-    //var room = $.url().param('room');
-    var websocket = new WebSocket(getWebSocketPath());
-    websocket.onopen = function(event){
-        var json = {
-            type:"request",
-            data:""
-        }
-        websocket.send(JSON.stringify(json));
-    }
-
-    websocket.onmessage = function(evt){
-        var msg = evt.data;
-        console.log(msg);
-        var json = JSON.parse(msg);
-
-        switch(json.type)
-        {
-            case "create":
-                getStream();
-                break;
-            case "join":
-                caller = true;
-                getStream();
-                //doCall();
-                break;
-            case "offer":
-                doAnswer(JSON.parse(json.data));
-                break;
-            case "answer":
-                dealAnswer(JSON.parse(json.data));
-                break;
-            case "candidate":
-                addCandidate(json.data);
-                break;
-        }
-    }
-
-    var pc;
-    var localVideo = document.getElementById("localVideo");
-    var remoteVideo = document.getElementById("remoteVideo");
-    var localStream;
-    var localSD;
-    var caller;
-    var pcConfig = {
-        'iceServers': [{
-            'urls': 'stun:stun.l.google.com:19302'
-        }]
+    var hash = window.location.hash.replace('#', '');
+    var meeting = new Meeting(hash);
+    var videoContainer = document.getElementById('videos-container');
+    var channel = location.href.replace(/\/|:|#|%|\.|\[|\]/g, '');
+    var sender = Math.round(Math.random() * 999999999) + 999999999;
+    var SIGNALING_SERVER = 'https://webrtcweb.com:9559/';
+    io.connect(SIGNALING_SERVER).emit('new-channel', {
+        channel: channel,
+        sender: sender
+    });
+    var socket = io.connect(SIGNALING_SERVER + channel);
+    socket.on('connect', function () {
+        // setup peer connection & pass socket object over the constructor!
+    });
+    socket.send = function (message) {
+        socket.emit('message', {
+            sender: sender,
+            data: message
+        });
     };
-    function getStream(){
-        console.log("getstream");
-        navigator.mediaDevices.getUserMedia({
-            audio:true,
-            video:true
-        }).then(gotStream).catch(function(e){
-            alert("Error while getting stream" + e);
-        });
-
-
-    }
-
-    function gotStream(stream){
-        console.log("gotstream");
-        var streamURL = window.URL.createObjectURL(stream);
-        localVideo.src = streamURL;
-        localStream = stream;
-        initConnection();
-    }
-
-    function initConnection(){
-        console.log("initconnection");
-        createPeerConnection();
-        while(localStream == null)
-            continue;
-        pc.addStream(localStream);
-
-        if(caller == true)
-            doCall();
-    }
-
-    function createPeerConnection() {
-        console.log("createPeerConnection");
-        pc = new RTCPeerConnection(pcConfig);
-        pc.onaddstream = function (evt) {
-            console.log("on add stream")
-            remoteVideo.src = window.URL.createObjectURL(evt.stream);
-        }
-        pc.onicecandidate = function (evt) {
-            console.log("on ice candidate");
-            if (evt.candidate) {
-
-                var candidateInformaion = {
-                    label: evt.candidate.sdpMLineIndex,
-                    id: evt.candidate.sdpMid,
-                    candidate: evt.candidate.candidate
-                }
-
-                var json = {
-                    type: "candidate",
-                    data: candidateInformaion
-                };
-                console.log(JSON.stringify(json));
-                websocket.send(JSON.stringify(json));
-            }
-        }
-    }
-
-    function doCall(){
-        console.log("docall");
-        pc.createOffer(function(offer){
-            pc.setLocalDescription(offer);
-            var sdp = JSON.stringify(offer.toJSON());
-            var json = {
-                type:"offer",
-                data:sdp
-            }
-            websocket.send(JSON.stringify(json));
-        },function(err){
-            console.log("Error on creating offer :" + err);
-        });
-    }
-
-    function doAnswer(sdp){
-        pc.setRemoteDescription(new RTCSessionDescription(sdp));
-        pc.createAnswer(function(answer){
-            pc.setLocalDescription(answer);
-            var sdp = JSON.stringify(answer);
-            var json = {
-                type:"answer",
-                data:sdp
-            }
-            websocket.send(JSON.stringify(json));
-        },function(err){
-            console.log("Error on sending answer :" + err);
-        });
-    }
-
-    function dealAnswer(sdp){
-        pc.setRemoteDescription(new RTCSessionDescription(sdp));
-    }
-
-    function addCandidate(candidateInformation){
-        console.log("add candidate");
-        var candidate = new RTCIceCandidate({
-            sdpMLineIndex:candidateInformation.label,
-            candidate:candidateInformation.candidate
-        })
-        pc.addIceCandidate(candidate);
-    }
+    meeting.openSignalingChannel = function(callback) {
+        return socket.on('message', callback);
+    };
+    // on getting media stream
+    meeting.onaddstream = function(e) {
+  
+    	alert("stream added");
+    	var newVideo = e.video;
+    	e.video.setAttribute("controls",true);
+    	e.video.setAttribute("playsinline",'');
+    	
+        videoContainer.appendChild(e.video);
+    };
+    // using firebase for signaling
+    meeting.firebase = 'rtcweb';
+    // if someone leaves; just remove his video
+    meeting.onuserleft = function(userid) {
+        var video = document.getElementById(userid);
+        if (video) video.parentNode.removeChild(video);
+    };
+    // check pre-created meeting rooms
+    meeting.check();
+    document.getElementById('setup-new-meeting').onclick = function() {
+        // setup new meeting room
+        meeting.setup('meeting room name');
+        this.disabled = true;
+        this.parentNode.innerHTML = '<h2><a href="' + location.href + '" target="_blank">Share this link</a></h2>';
+    };
 </script>
+
+<script src="https://cdn.webrtc-experiment.com/common.js"> </script>
 </body>
 </html>
