@@ -2,13 +2,13 @@
 // MIT License   - https://www.webrtc-experiment.com/licence/
 // Documentation - https://github.com/muaz-khan/WebRTC-Experiment/tree/master/broadcast
 
+var verbose = 0;
+
 (function() {
 
     // a middle-agent between public API and the Signaler object
     window.Meeting = function(channel) {
         var signaler, self = this;
-        window.URL = window.URL || window.webkitURL
-        var debugging = false;
         
         this.channel = channel;
 
@@ -29,27 +29,27 @@
                 audio: true,
                 video: true
             };
-            if(debugging)
+            if(verbose > 0)
             	alert("capturing user stream");
             navigator.getUserMedia(constraints, onstream, onerror);
 
             function onstream(stream) {
             	
-            	if(debugging)
-            		alert("onstream");
+            	if(verbose > 0)
+            		alert("capture stream success");
             	
                 self.stream = stream;
                 callback(stream);
 
-                if(debugging)
+                if(verbose > 20)
                 	alert("trying to create video");
                 
                 var video = document.createElement('video');
-                if(debugging)
+                if(verbose > 20)
                 	alert("create element finished");
                 
                 video.id = 'self';
-                if(debugging)
+                if(verbose > 20)
                 	alert("video id assigned");
                 
                 /*
@@ -62,22 +62,22 @@
                 	alert("branch exit");
                 }
 
-                if(debugging)
+                if(verbose > 20)
                 	alert("src created");
                 */
                 
                 //video[isFirefox ? 'mozSrcObject' : 'src'] = blob;
                 video.srcObject = stream;
-                if(debugging)
+                if(verbose > 20)
                 	alert("video src set");
                 
                 video.autoplay = true;
                 video.controls = true;
                 video.play();
-                if(debugging)
+                if(verbose > 20)
                 	alert("video playing");
                 
-                if(debugging)
+                if(verbose > 20)
                 {
                 	alert("viedo created");
                 	alert(video);
@@ -186,6 +186,8 @@
 
         // it is called when your signalling implementation fires "onmessage"
         this.onmessage = function(message) {
+        	if(verbose > 20)
+        		alert("message received:" + JSON.stringify(message,null,4));
             // if new room detected
             if (message.roomid && message.broadcasting && !signaler.sentParticipationRequest)
                 root.onmeeting(message);
@@ -221,6 +223,10 @@
             var sdp = message.sdp;
 
             if (sdp.type == 'offer') {
+            	
+            	if(verbose > 0)
+            		alert("receive offer");
+            	
                 var _options = options;
                 _options.stream = root.stream;
                 _options.sdp = sdp;
@@ -229,12 +235,17 @@
             }
 
             if (sdp.type == 'answer') {
+            	
+            	if(verbose > 20)
+            		alert("receive answer");
                 peers[message.userid].setRemoteDescription(sdp);
             }
         };
 
         // if someone shared ICE
         this.onice = function(message) {
+        	if(verbose > 20)
+        		alert("ice candidate received");
             var peer = peers[message.userid];
             if (!peer) {
                 var candidate = candidates[message.userid];
@@ -269,7 +280,8 @@
             },
             onaddstream: function(stream, _userid) {
                 console.debug('onaddstream', '>>>>>>', stream);
-
+                if(verbose > 0)
+                	alert("stream added,start processing");
                 var video = document.createElement('video');
                 video.id = _userid;
                 //video[isFirefox ? 'mozSrcObject' : 'src'] = isFirefox ? stream : window.URL.createObjectURL(stream);
@@ -277,22 +289,38 @@
                 video.autoplay = true;
                 video.controls = true;
                 video.play();
-
+                	
+                var targetState = 2;
+                
                 function onRemoteStreamStartsFlowing() {
-                    if (!(video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA || video.paused || video.currentTime <= 0)) {
-                        afterRemoteStreamStartedFlowing();
-                    } else
+                	if(verbose > 10)
+                		alert("on remote stream start flowing");
+                	
+                	//false -> video.paused
+                    if (!(video.readyState <= targetState || false || video.currentTime < 0)) {
+                        if(verbose > 10)
+                        	alert("SUCCESS! " +"expected state: " + targetState + " readyState: " + video.readyState + " paused: " + video.paused + " currentTime: " + video.currentTime);
+                    	afterRemoteStreamStartedFlowing();
+                    } else{
+                    	if(verbose > 10)
+                    		alert("expected state: " + targetState + " readyState: " + video.readyState + " paused: " + video.paused + " currentTime: " + video.currentTime);
                         setTimeout(onRemoteStreamStartsFlowing, 300);
+                    }
                 }
 
                 function afterRemoteStreamStartedFlowing() {
                     if (!root.onaddstream) return;
+                    
+                    if(verbose > 10)
+                    	alert("Enter:after remote stream start flowing");
                     root.onaddstream({
                         video: video,
                         stream: stream,
                         userid: _userid,
                         type: 'remote'
                     });
+                    if(verbose > 10)
+                    	alert("Exit:after remote stream start flowing")
                 }
 
                 onRemoteStreamStartsFlowing();
@@ -452,6 +480,8 @@
             return this;
         },
         setRemoteDescription: function(sdp) {
+        	if(verbose > 0)
+        		alert("set remote description");
             this.peer.setRemoteDescription(new RTCSessionDescription(sdp), onSdpSuccess, onSdpError);
         },
         addIceCandidate: function(candidate) {
@@ -480,12 +510,17 @@
                     if (event.candidate) config.onicecandidate(event.candidate, config.to);
                 };
 
+            if(verbose > 0)
+            	alert("In create answer:begin set remote description and create answer");
+            
             peer.setRemoteDescription(new RTCSessionDescription(config.sdp), onSdpSuccess, onSdpError);
             peer.createAnswer(function(sdp) {
                 peer.setLocalDescription(sdp);
                 if (config.onsdp) config.onsdp(sdp, config.to);
             }, onSdpError, offerAnswerConstraints);
-
+            
+            if(verbose > 0)
+            	alert("In create answer:finish set remote description and create answer");
             this.peer = peer;
 
             return this;
