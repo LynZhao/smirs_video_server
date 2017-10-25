@@ -1,0 +1,33 @@
+.cornerVideo{
+    z-index:3;
+    position:absolute;
+
+    right:5%;
+    top: 0;
+    width: 35%;
+    height: 35%;
+    overflow: hidden;
+}
+
+.mainVideo{
+    z-index:1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.videoContainer{
+    min-width: 100%;
+    min-height: 100%;
+    width: 100%;
+    height: 100%;
+}
+
+.right-top{
+    position:absolute;
+    right:1%;
+    top:0%;
+}

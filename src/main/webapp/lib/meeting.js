@@ -2,14 +2,14 @@
 // MIT License   - https://www.webrtc-experiment.com/licence/
 // Documentation - https://github.com/muaz-khan/WebRTC-Experiment/tree/master/broadcast
 
-var verbose = 0;
+var verbose = -1;
 
 (function() {
 
     // a middle-agent between public API and the Signaler object
     window.Meeting = function(channel) {
         var signaler, self = this;
-        
+
         this.channel = channel;
 
         // get alerted for each new meeting
@@ -30,59 +30,65 @@ var verbose = 0;
                 video: true
             };
             if(verbose > 0)
-            	alert("capturing user stream");
+                alert("capturing user stream");
             navigator.getUserMedia(constraints, onstream, onerror);
 
             function onstream(stream) {
-            	
-            	if(verbose > 0)
-            		alert("capture stream success");
-            	
+
+                if(verbose > 0)
+                    alert("capture stream success");
+
                 self.stream = stream;
                 callback(stream);
 
                 if(verbose > 20)
-                	alert("trying to create video");
-                
+                    alert("trying to create video");
+
                 var video = document.createElement('video');
                 if(verbose > 20)
-                	alert("create element finished");
-                
+                    alert("create element finished");
+
                 video.id = 'self';
                 if(verbose > 20)
-                	alert("video id assigned");
-                
+                    alert("video id assigned");
+
                 /*
                 var blob = stream;
                 if(!isFirefox)
                 {
                 	alert("branch enter");
                 	alert(stream);
-                	blob = window.URL.createObjectURL(stream);                	
+                	blob = window.URL.createObjectURL(stream);
                 	alert("branch exit");
                 }
 
                 if(verbose > 20)
                 	alert("src created");
                 */
-                
+
                 //video[isFirefox ? 'mozSrcObject' : 'src'] = blob;
                 video.srcObject = stream;
                 if(verbose > 20)
-                	alert("video src set");
-                
+                    alert("video src set");
+
                 video.autoplay = true;
-                video.controls = true;
+                video.muted = true;
                 video.play();
+                video.id = "localStream";
+                //video.onclick = toggle;
+                video.className += "mainVideo";
+                video.controls = true;
+                //video.addEventListener('touchstart',toggle);
+
                 if(verbose > 20)
-                	alert("video playing");
-                
+                    alert("video playing");
+
                 if(verbose > 20)
                 {
-                	alert("viedo created");
-                	alert(video);
+                    alert("viedo created");
+                    alert(video);
                 }
-
+                clearTips();
                 self.onaddstream({
                     video: video,
                     stream: stream,
@@ -142,10 +148,10 @@ var verbose = 0;
                     else signaler.onmessage(data);
                 }
 
-                // we want socket.io behavior; 
-                // that's why data is removed from firebase servers 
+                // we want socket.io behavior;
+                // that's why data is removed from firebase servers
                 // as soon as it is received
-                // data.userid != userid && 
+                // data.userid != userid &&
                 if (data.userid != userid) snap.ref().remove();
             });
 
@@ -186,14 +192,14 @@ var verbose = 0;
 
         // it is called when your signalling implementation fires "onmessage"
         this.onmessage = function(message) {
-        	if(verbose > 20)
-        		alert("message received:" + JSON.stringify(message,null,4));
+            if(verbose > 20)
+                alert("message received:" + JSON.stringify(message,null,4));
             // if new room detected
             if (message.roomid && message.broadcasting && !signaler.sentParticipationRequest)
                 root.onmeeting(message);
 
             else
-                // for pretty logging
+            // for pretty logging
                 console.debug(JSON.stringify(message, function(key, value) {
                     if (value.sdp) {
                         console.log(value.sdp.type, '————', value.sdp.sdp);
@@ -223,10 +229,10 @@ var verbose = 0;
             var sdp = message.sdp;
 
             if (sdp.type == 'offer') {
-            	
-            	if(verbose > 0)
-            		alert("receive offer");
-            	
+
+                if(verbose > 0)
+                    alert("receive offer");
+
                 var _options = options;
                 _options.stream = root.stream;
                 _options.sdp = sdp;
@@ -235,17 +241,17 @@ var verbose = 0;
             }
 
             if (sdp.type == 'answer') {
-            	
-            	if(verbose > 20)
-            		alert("receive answer");
+
+                if(verbose > 20)
+                    alert("receive answer");
                 peers[message.userid].setRemoteDescription(sdp);
             }
         };
 
         // if someone shared ICE
         this.onice = function(message) {
-        	if(verbose > 20)
-        		alert("ice candidate received");
+            if(verbose > 20)
+                alert("ice candidate received");
             var peer = peers[message.userid];
             if (!peer) {
                 var candidate = candidates[message.userid];
@@ -281,38 +287,43 @@ var verbose = 0;
             onaddstream: function(stream, _userid) {
                 console.debug('onaddstream', '>>>>>>', stream);
                 if(verbose > 0)
-                	alert("stream added,start processing");
+                    alert("stream added,start processing");
                 var video = document.createElement('video');
                 video.id = _userid;
                 //video[isFirefox ? 'mozSrcObject' : 'src'] = isFirefox ? stream : window.URL.createObjectURL(stream);
+
                 video.srcObject = stream;
                 video.autoplay = true;
                 video.controls = true;
+                video.id = "remoteStream";
+                //video.onclick = toggle;
+                video.className += "cornerVideo";
+                //video.addEventListener('touchstart',toggle);
+
                 video.play();
-                	
                 var targetState = 2;
-                
+
                 function onRemoteStreamStartsFlowing() {
-                	if(verbose > 10)
-                		alert("on remote stream start flowing");
-                	
-                	//false -> video.paused
+                    if(verbose > 10)
+                        alert("on remote stream start flowing");
+
+                    //false -> video.paused
                     if (!(video.readyState <= targetState || false || video.currentTime < 0)) {
                         if(verbose > 10)
-                        	alert("SUCCESS! " +"expected state: " + targetState + " readyState: " + video.readyState + " paused: " + video.paused + " currentTime: " + video.currentTime);
-                    	afterRemoteStreamStartedFlowing();
+                            alert("SUCCESS! " +"expected state: " + targetState + " readyState: " + video.readyState + " paused: " + video.paused + " currentTime: " + video.currentTime);
+                        afterRemoteStreamStartedFlowing();
                     } else{
-                    	if(verbose > 10)
-                    		alert("expected state: " + targetState + " readyState: " + video.readyState + " paused: " + video.paused + " currentTime: " + video.currentTime);
+                        if(verbose > 10)
+                            alert("expected state: " + targetState + " readyState: " + video.readyState + " paused: " + video.paused + " currentTime: " + video.currentTime);
                         setTimeout(onRemoteStreamStartsFlowing, 300);
                     }
                 }
 
                 function afterRemoteStreamStartedFlowing() {
                     if (!root.onaddstream) return;
-                    
+
                     if(verbose > 10)
-                    	alert("Enter:after remote stream start flowing");
+                        alert("Enter:after remote stream start flowing");
                     root.onaddstream({
                         video: video,
                         stream: stream,
@@ -320,7 +331,7 @@ var verbose = 0;
                         type: 'remote'
                     });
                     if(verbose > 10)
-                    	alert("Exit:after remote stream start flowing")
+                        alert("Exit:after remote stream start flowing")
                 }
 
                 onRemoteStreamStartsFlowing();
@@ -445,17 +456,17 @@ var verbose = 0;
     function getToken() {
         return (Math.random() * new Date().getTime()).toString(36).replace( /\./g , '');
     }
-	
-	function onSdpSuccess() {}
+
+    function onSdpSuccess() {}
 
     function onSdpError(e) {
         console.error('sdp error:', e.name, e.message);
     }
 
     // var offer = Offer.createOffer(config);
-	// offer.setRemoteDescription(sdp);
-	// offer.addIceCandidate(candidate);
-	
+    // offer.setRemoteDescription(sdp);
+    // offer.addIceCandidate(candidate);
+
     var Offer = {
         createOffer: function(config) {
             var peer = new RTCPeerConnection(iceServers, optionalArgument);
@@ -480,8 +491,8 @@ var verbose = 0;
             return this;
         },
         setRemoteDescription: function(sdp) {
-        	if(verbose > 0)
-        		alert("set remote description");
+            if(verbose > 0)
+                alert("set remote description");
             this.peer.setRemoteDescription(new RTCSessionDescription(sdp), onSdpSuccess, onSdpError);
         },
         addIceCandidate: function(candidate) {
@@ -495,7 +506,7 @@ var verbose = 0;
     // var answer = Answer.createAnswer(config);
     // answer.setRemoteDescription(sdp);
     // answer.addIceCandidate(candidate);
-    
+
     var Answer = {
         createAnswer: function(config) {
             var peer = new RTCPeerConnection(iceServers, optionalArgument);
@@ -511,16 +522,16 @@ var verbose = 0;
                 };
 
             if(verbose > 0)
-            	alert("In create answer:begin set remote description and create answer");
-            
+                alert("In create answer:begin set remote description and create answer");
+
             peer.setRemoteDescription(new RTCSessionDescription(config.sdp), onSdpSuccess, onSdpError);
             peer.createAnswer(function(sdp) {
                 peer.setLocalDescription(sdp);
                 if (config.onsdp) config.onsdp(sdp, config.to);
             }, onSdpError, offerAnswerConstraints);
-            
+
             if(verbose > 0)
-            	alert("In create answer:finish set remote description and create answer");
+                alert("In create answer:finish set remote description and create answer");
             this.peer = peer;
 
             return this;
@@ -560,4 +571,75 @@ var verbose = 0;
             });
         }
     }
+
+    function toggle()
+    {
+        if(verbose == -1)
+            alert("toggle in");
+        if(this.className != "cornerVideo")
+            return;
+
+        var videoID = this.id;
+        var nowClass,nextClass;
+
+        if(verbose == -1)
+            alert(videoID);
+
+        if(videoID == "localStream")
+        {
+            if(verbose == -1)
+                alert("branch in");
+
+            nowClass = this.className;
+            nextClass = document.getElementById("remoteStream").className;
+
+            if(verbose == -1)
+            {
+                alert("attribute get");
+                alert("now class:" + nowClass);
+                alert("next class:" + nextClass);
+            }
+
+            this.className = nextClass;
+            document.getElementById("remoteStream").className = nowClass;
+        }
+        else
+        {
+            if(verbose == -1)
+                alert("branch in");
+
+            nowClass = this.className;
+            nextClass = document.getElementById("localStream").className;
+
+            if(verbose == -1)
+            {
+                alert("attribute get");
+                alert("now class:" + nowClass);
+                alert("next class:" + nextClass);
+            }
+
+            this.className = nextClass;
+            document.getElementById("localStream").className = nowClass;
+
+        }
+        //alert("remoteStream");
+        //alert(videoID);
+    }
+
+
 })();
+
+function switchClass()
+{
+    var localClass = document.getElementById("localStream").className;
+    var remoteClass = document.getElementById("remoteStream").className;
+
+    document.getElementById("localStream").className = remoteClass;
+    document.getElementById("remoteStream").className = localClass;
+}
+
+function clearTips()
+{
+    document.getElementById("tips").innerHTML = "";
+    document.getElementById("browser-tips").innerHTML = "";
+}

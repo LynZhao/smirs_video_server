@@ -21,6 +21,7 @@
     </script>
     <script src="https://cdn.webrtc-experiment.com/socket.io.js"></script>
     <script src="lib/meeting.js"> </script>
+    <link rel="stylesheet" type="text/css" href="lib/videoCSS.css">
 </head>
 <body>
 
@@ -28,14 +29,15 @@
 <section class="plusone-gplus">
     <div class="g-plusone" data-href="https://www.webrtc-experiment.com/"></div>
 </section>
-<section>
+<section id="tips">
     <h2>Setup a new meeting:</h2>
 
     <button id="setup-new-meeting">Setup New Meeting</button>
 </section>
 
 
-<div id="videos-container"></div>
+<div id="videos-container" class="videoContainer"></div>
+<div id="browser-tips" class="right-top"></div>
 <script>
     var hash = window.location.hash.replace('#', '');
     var meeting = new Meeting(hash);
@@ -47,6 +49,7 @@
         channel: channel,
         sender: sender
     });
+
     var socket = io.connect(SIGNALING_SERVER + channel);
     socket.on('connect', function () {
         // setup peer connection & pass socket object over the constructor!
@@ -62,13 +65,15 @@
     };
     // on getting media stream
     meeting.onaddstream = function(e) {
-  
-    	alert("stream added");
-    	var newVideo = e.video;
-    	e.video.setAttribute("controls",true);
-    	e.video.setAttribute("playsinline",'');
-    	
+
+        //alert("stream added");
+        var newVideo = e.video;
+        e.video.setAttribute("controls",true);
+        e.video.setAttribute("playsinline",'');
+
         videoContainer.appendChild(e.video);
+        if(e.video.id == "remoteStream")
+            switchClass();
     };
     // using firebase for signaling
     meeting.firebase = 'rtcweb';
@@ -85,6 +90,18 @@
         this.disabled = true;
         this.parentNode.innerHTML = '<h2><a href="' + location.href + '" target="_blank">Share this link</a></h2>';
     };
+
+    //judge browser and give tips
+    var u = navigator.userAgent;
+    var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1;
+    var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/);
+    var p = document.createElement("p");
+    if(isiOS)
+        p.innerHTML = "Please open in Safari 11";
+    else
+        p.innerHTML = "Please open in Chrome";
+    document.getElementById("browser-tips").appendChild(p);
+
 </script>
 
 <script src="https://cdn.webrtc-experiment.com/common.js"> </script>
