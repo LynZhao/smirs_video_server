@@ -2,7 +2,7 @@
 // MIT License   - https://www.webrtc-experiment.com/licence/
 // Documentation - https://github.com/muaz-khan/WebRTC-Experiment/tree/master/broadcast
 
-var verbose = -1;
+var verbose = 0;
 
 (function() {
 
@@ -395,7 +395,7 @@ var verbose = -1;
         }
 
         function getSTUNObj(stunStr) {
-            var urlsParam = 'urls';
+            var urlsParam = 'urls';									
             if (typeof isPluginRTC !== 'undefined') {
                 urlsParam = 'url';
             }

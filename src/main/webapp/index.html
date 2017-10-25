@@ -30,20 +30,30 @@
     <div class="g-plusone" data-href="https://www.webrtc-experiment.com/"></div>
 </section>
 <section id="tips">
-    <h2>Setup a new meeting:</h2>
+    <h2>Setup a new interview:</h2>
 
-    <button id="setup-new-meeting">Setup New Meeting</button>
+    <button id="setup-new-meeting">Setup New interview</button>
 </section>
 
 
 <div id="videos-container" class="videoContainer"></div>
 <div id="browser-tips" class="right-top"></div>
 <script>
+    if(verbose == -2)
+        alert(window.location.hash);
     var hash = window.location.hash.replace('#', '');
+    var sections = hash.split('?');
     var meeting = new Meeting(hash);
+
+    hash = sections[0];
+    if(verbose == -2)
+        alert(hash);
+
     var videoContainer = document.getElementById('videos-container');
     var channel = location.href.replace(/\/|:|#|%|\.|\[|\]/g, '');
     var sender = Math.round(Math.random() * 999999999) + 999999999;
+	channel = channel.split('?')[0];
+    
     var SIGNALING_SERVER = 'https://webrtcweb.com:9559/';
     io.connect(SIGNALING_SERVER).emit('new-channel', {
         channel: channel,
