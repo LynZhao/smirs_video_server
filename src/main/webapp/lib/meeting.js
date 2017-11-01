@@ -88,7 +88,7 @@ var verbose = 0;
                     alert("viedo created");
                     alert(video);
                 }
-                clearTips();
+                
                 self.onaddstream({
                     video: video,
                     stream: stream,
@@ -638,8 +638,3 @@ function switchClass()
     document.getElementById("remoteStream").className = localClass;
 }
 
-function clearTips()
-{
-    document.getElementById("tips").innerHTML = "";
-    document.getElementById("browser-tips").innerHTML = "";
-}
