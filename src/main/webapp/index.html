@@ -55,13 +55,14 @@
     <div class="g-plusone" data-href="https://www.webrtc-experiment.com/"></div>
 </section>
 
-    
-
+    <div id="info-container" class="infoContainer hidden">
+<button id="infoButton" class="btn btn-md btn-success"><span class="glyphicon glyphicon-refresh glyphicon-refresh-animate "></span> Waiting for the candidate to join...</button>
+</div>
 <div id="videos-container" class="videoContainer">
 
 <input id="setup-new-meeting" type="button" class="btn btn-lg btn-primary" value="Start Interview">
+	
 </div>
-
 
 
 
@@ -125,6 +126,9 @@
         // setup new meeting room
         meeting.setup('meeting room name');
         this.disabled = true;
+        //document.getElementById('infoButton').hide();
+        $("#info-container").removeClass('hidden');
+        //$('infoButton').hide();
     };
 
     //judge browser and give tips
