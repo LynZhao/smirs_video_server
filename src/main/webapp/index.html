@@ -61,12 +61,63 @@
 <div id="videos-container" class="videoContainer">
 
 <input id="setup-new-meeting" type="button" class="btn btn-lg btn-primary" value="Start Interview">
-	
+</div>
+<div id="message-container" class="alert alert-warning hidden">
+  <strong>You are not allowed to participate this interview</strong>
 </div>
 
-
-
+<script src="https://cdn.webrtc-experiment.com/common.js"> </script>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="assets/js/ie10-viewport-bug-workaround.js"></script>
 <script>
+function get(name, paramList){
+	   if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(paramList))
+	      return decodeURIComponent(name[1]);
+	}
+	
+var paramList =  '?' + window.location.href.split('?')[1];
+
+if(paramList){
+	var candidateOrRecruiter = this.get('_ro',paramList);
+	var convId = this.get('_se',paramList);
+	var server = this.get('_u',paramList);
+}
+
+
+var verifyURL = "";
+if(server == 'ap1'){
+	verifyURL= "https://smirsc86b00db6.ap1.hana.ondemand.com/smirs";
+}
+else if(server == 'cn1'){
+	verifyURL= "https://smirsappfdb4715bd.cn1.hana.ondemand.com/smirs";
+}
+else{
+	verifyURL= "https://smirsweea26e6c.int.sap.hana.ondemand.com/smirs";
+}
+verifyURL += "/secret/verify?conversationId=" + convId;
+
+//var testURL = "http://localhost:8080/smirs/secret/verify?conversationId=NdXrq9tZk1MFuoWLMT1N7o59IX8GDCVTmLZ2GkaLMXeuYg3EJhjCrcfJTyoXmxXwXUtiPjUfZ2taTJVko+yUVpBqzUuPtG8Eo7TLBE/fVTc=";
+  jQuery.ajax({
+ 	url : verifyURL,
+ 	method : "GET"
+ }).success(function(data) {
+	 if(data){
+	 }else{
+		 $("#videos-container").addClass('hidden');
+		 $("#message-container").removeClass('hidden');
+		 return;
+	 }
+ 	
+ }); 
+
+
+    
     if(verbose == -2)
         alert(window.location.hash);
     var hash = window.location.hash.replace('#', '');
@@ -144,14 +195,6 @@
 
 </script>
 
-<script src="https://cdn.webrtc-experiment.com/common.js"> </script>
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="assets/js/ie10-viewport-bug-workaround.js"></script>
+
   </body>
 </html>
