@@ -170,7 +170,7 @@ verifyURL += "/secret/verify?conversationId=" + convId;
     };
     // on getting media stream
     meeting.onaddstream = function(e) {
-
+    	$("#info-container2").addClass('hidden');
         //alert("stream added");
         var newVideo = e.video;
         e.video.setAttribute("controls",true);
