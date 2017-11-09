@@ -49,7 +49,9 @@ a:hover {
 html,
 body {
   height: 100%;
-  background-color: #87CEEB;
+
+  background-repeat: repeat-x;
+   background-image:url('bg.png');
 }
 body {
   color: #fff;
