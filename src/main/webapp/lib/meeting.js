@@ -3,7 +3,7 @@
 // Documentation - https://github.com/muaz-khan/WebRTC-Experiment/tree/master/broadcast
 
 var verbose = 0;
-
+var cOrR = -1;
 (function() {
 
     // a middle-agent between public API and the Signaler object
@@ -76,7 +76,15 @@ var verbose = 0;
                 video.play();
                 video.id = "localStream";
                 //video.onclick = toggle;
-                video.className += "mainVideo";
+                if(cOrR == 0){
+                	/* Recruiter */
+                	video.className += "mainVideoLaptop";;
+                }
+                else{
+                	/* Candidate */
+                	video.className += "mainVideoMobile";
+                }
+                
                 video.controls = true;
                 //video.addEventListener('touchstart',toggle);
 
@@ -103,7 +111,8 @@ var verbose = 0;
         }
 
         // setup new meeting room
-        this.setup = function(roomid) {
+        this.setup = function(roomid, candidateOrRecruiter) {
+        	cOrR =  candidateOrRecruiter;
             captureUserMedia(function() {
                 !signaler && initSignaler();
                 signaler.broadcast({

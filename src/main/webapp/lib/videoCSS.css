@@ -9,7 +9,7 @@
     overflow: hidden;
 }
 
-.mainVideo{
+.mainVideoMobile{
 	/*
     z-index:1;
     position: absolute;
@@ -23,6 +23,23 @@
     height: 100%;
     object-fit: cover;
     object-position: center center;
+}
+
+.mainVideoLaptop{
+	
+    z-index:1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /*
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    */
 }
 
 .hidden {

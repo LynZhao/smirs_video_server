@@ -108,7 +108,8 @@ else{
 verifyURL += "/secret/verify?conversationId=" + convId;
 
 //var testURL = "http://localhost:8080/smirs/secret/verify?conversationId=NdXrq9tZk1MFuoWLMT1N7o59IX8GDCVTmLZ2GkaLMXeuYg3EJhjCrcfJTyoXmxXwXUtiPjUfZ2taTJVko+yUVpBqzUuPtG8Eo7TLBE/fVTc=";
-  jQuery.ajax({
+/*
+jQuery.ajax({
  	url : verifyURL,
  	method : "GET"
  }).success(function(data) {
@@ -120,7 +121,7 @@ verifyURL += "/secret/verify?conversationId=" + convId;
 	 }
  	
  }); 
-
+*/
   if(candidateOrRecruiter == '1'){
 	  /* Candidate */
 	  $("#info-container2").removeClass('hidden');
@@ -191,7 +192,7 @@ verifyURL += "/secret/verify?conversationId=" + convId;
     meeting.check();
     document.getElementById('setup-new-meeting').onclick = function() {
         // setup new meeting room
-        meeting.setup('meeting room name');
+        meeting.setup('meeting room name', candidateOrRecruiter);
         this.disabled = true;
         //document.getElementById('infoButton').hide();
         $("#info-container").removeClass('hidden');
