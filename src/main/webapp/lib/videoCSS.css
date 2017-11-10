@@ -28,7 +28,11 @@
 
 
 #remoteStream::-webkit-media-controls-enclosure{
-	width: 40%;	
+	width: 70%;	
+}
+
+#localStream::-webkit-media-controls-enclosure{
+	width: 70%;	
 }
 
 .mainVideoLaptop{
