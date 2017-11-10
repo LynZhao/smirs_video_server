@@ -25,6 +25,12 @@
     object-position: center center;
 }
 
+
+
+#remoteStream::-webkit-media-controls-enclosure{
+	width: 40%;	
+}
+
 .mainVideoLaptop{
 	
     z-index:1;
