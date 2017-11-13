@@ -97,8 +97,8 @@ function loadProperties(){
 	mode:'map', // 用 Map 的方式使用资源文件中的值
 	callback: function() {// 加载成功后设置显示内容
 		$('#setup-new-meeting').val($.i18n.prop('START_INTERVIEW')); 
-		$('#infoButton2').text($.i18n.prop('WAIT_FOR_THE_RECRUITER')); 
-		$('#infoButton').text($.i18n.prop('WAIT_FOR_THE_CANDIDATE')); 
+		$('#infoButton2').html("<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate '></span>&nbsp;&nbsp;&nbsp;"  + $.i18n.prop('WAIT_FOR_THE_RECRUITER')); 
+		$('#infoButton').html("<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate '></span>&nbsp;&nbsp;&nbsp;"  + $.i18n.prop('WAIT_FOR_THE_CANDIDATE'));
 	} 
 	}); 
 	}
