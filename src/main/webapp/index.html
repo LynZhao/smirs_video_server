@@ -106,7 +106,7 @@ function loadProperties(){
 	/* Load i18n resource */
 	this.loadProperties();
 var paramList =  '?' + window.location.href.split('?')[1];
-
+paramList = paramList.replace(/amp;/g,'');
 if(paramList){
 	var candidateOrRecruiter = this.get('_ro',paramList);
 	var convId = this.get('_se',paramList);
@@ -127,7 +127,7 @@ else{
 verifyURL += "/secret/verify?conversationId=" + convId;
 
 //var testURL = "http://localhost:8080/smirs/secret/verify?conversationId=NdXrq9tZk1MFuoWLMT1N7o59IX8GDCVTmLZ2GkaLMXeuYg3EJhjCrcfJTyoXmxXwXUtiPjUfZ2taTJVko+yUVpBqzUuPtG8Eo7TLBE/fVTc=";
-/*
+
 jQuery.ajax({
  	url : verifyURL,
  	method : "GET"
@@ -140,7 +140,7 @@ jQuery.ajax({
 	 }
  	
  }); 
-*/
+
   if(candidateOrRecruiter == '1'){
 	  /* Candidate */
 	  $("#info-container2").removeClass('hidden');
