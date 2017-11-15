@@ -48,10 +48,11 @@ a:hover {
 
 html,
 body {
-  height: 100%;
-
-  background-repeat: repeat-x;
-   background-image:url('bg.png');
+    height: 100%;
+    background: #2b2b2b;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 body {
   color: #fff;

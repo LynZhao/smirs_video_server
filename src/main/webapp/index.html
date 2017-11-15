@@ -99,6 +99,7 @@ function loadProperties(){
 		$('#setup-new-meeting').val($.i18n.prop('START_INTERVIEW')); 
 		$('#infoButton2').html("<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate '></span>&nbsp;&nbsp;&nbsp;"  + $.i18n.prop('WAIT_FOR_THE_RECRUITER')); 
 		$('#infoButton').html("<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate '></span>&nbsp;&nbsp;&nbsp;"  + $.i18n.prop('WAIT_FOR_THE_CANDIDATE'));
+		$('#message-container').html("<strong>" + $.i18n.prop('NOT_ALLOW') + "</strong>");
 	} 
 	}); 
 	}
@@ -132,13 +133,15 @@ jQuery.ajax({
  	url : verifyURL,
  	method : "GET"
  }).success(function(data) {
-	 if(data){
+	 if(data == 'true'){
 	 }else{
 		 $("#videos-container").addClass('hidden');
+		 $("#info-container2").addClass('hidden');
 		 $("#message-container").removeClass('hidden');
 		 return;
 	 }
  	
+ }).fail(function(data) {
  }); 
 
   if(candidateOrRecruiter == '1'){
