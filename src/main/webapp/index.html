@@ -169,9 +169,9 @@ jQuery.ajax({
     var sender = Math.round(Math.random() * 999999999) + 999999999;
 	channel = channel.split('?')[0];
     
-    //var SIGNALING_SERVER = 'https://webrtcweb.com:9559/';
+    var SIGNALING_SERVER = 'https://webrtcweb.com:9559/';
     //var SIGNALING_SERVER = 'http://128.199.85.149:8888/';
-    var SIGNALING_SERVER = 'https://www.greentongyao.com:8899/';
+    //var SIGNALING_SERVER = 'https://www.greentongyao.com:8899/';
     
     io.connect(SIGNALING_SERVER).emit('new-channel', {
         channel: channel,
@@ -194,6 +194,7 @@ jQuery.ajax({
     // on getting media stream
     meeting.onaddstream = function(e) {
     	$("#info-container2").addClass('hidden');
+    	
         //alert("stream added");
         var newVideo = e.video;
         e.video.setAttribute("controls",true);
@@ -201,6 +202,7 @@ jQuery.ajax({
 
         videoContainer.appendChild(e.video);
         if(e.video.id == "remoteStream")
+        	$("#info-container").addClass('hidden');
             switchClass();
     };
     // using firebase for signaling

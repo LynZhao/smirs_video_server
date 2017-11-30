@@ -67,6 +67,13 @@
 
 .infoContainer{
     display: flex;
+    position: absolute;
+    z-index: 9999;
+    left: calc(50% - 200px);
+}
+
+#infoButton{
+	width: 400px;
 }
 
 .right-top{
